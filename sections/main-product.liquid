@@ -453,20 +453,34 @@
                     {%- endif -%}
                   </div>
                 {%- when 'popup' -%}
-                  <modal-opener
-                    class="product-popup-modal__opener quick-add-hidden"
-                    data-modal="#PopupModal-{{ block.id }}"
-                    {{ block.shopify_attributes }}
-                  >
-                    <button
-                      id="ProductPopup-{{ block.id }}"
-                      class="product-popup-modal__button link"
-                      type="button"
-                      aria-haspopup="dialog"
+                  {%- liquid
+                    # Show the pop-up link only if the product has the tag set in the block (if any).
+                    # Tags are lowercased so "Men" and "men" both match.
+                    assign popup_visible = true
+                    if block.settings.required_tag != blank
+                      assign product_tags = product.tags | join: '|' | downcase | split: '|'
+                      assign required_tag = block.settings.required_tag | strip | downcase
+                      unless product_tags contains required_tag
+                        assign popup_visible = false
+                      endunless
+                    endif
+                  -%}
+                  {%- if popup_visible -%}
+                    <modal-opener
+                      class="product-popup-modal__opener quick-add-hidden"
+                      data-modal="#PopupModal-{{ block.id }}"
+                      {{ block.shopify_attributes }}
                     >
-                      {{ block.settings.text | default: block.settings.page.title | escape }}
-                    </button>
-                  </modal-opener>
+                      <button
+                        id="ProductPopup-{{ block.id }}"
+                        class="product-popup-modal__button link"
+                        type="button"
+                        aria-haspopup="dialog"
+                      >
+                        {{ block.settings.text | default: block.settings.page.title | escape }}
+                      </button>
+                    </modal-opener>
+                  {%- endif -%}
                 {%- when 'share' -%}
                   {% liquid
                     assign share_url = product.selected_variant.url | default: product.url | prepend: request.origin
@@ -699,10 +713,20 @@
 
       {% assign popups = section.blocks | where: 'type', 'popup' %}
       {%- for block in popups -%}
+        {%- liquid
+          # Same tag check as the pop-up link above: no link means no modal is needed.
+          if block.settings.required_tag != blank
+            assign product_tags = product.tags | join: '|' | downcase | split: '|'
+            assign required_tag = block.settings.required_tag | strip | downcase
+            unless product_tags contains required_tag
+              continue
+            endunless
+          endif
+        -%}
         <modal-dialog id="PopupModal-{{ block.id }}" class="product-popup-modal" {{ block.shopify_attributes }}>
           <div
             role="dialog"
-            aria-label="{{ block.settings.text }}"
+            aria-label="{{ block.settings.text | default: block.settings.page.title | escape }}"
             aria-modal="true"
             class="product-popup-modal__content"
             tabindex="-1"
@@ -1233,6 +1257,12 @@
           "id": "page",
           "type": "page",
           "label": "t:sections.main-product.blocks.popup.settings.page.label"
+        },
+        {
+          "type": "text",
+          "id": "required_tag",
+          "label": "Show only for products with tag",
+          "info": "Leave empty to show on all products. Not case-sensitive."
         }
       ]
     },
