@@ -12,14 +12,21 @@
     {%- for link in section.settings.menu.links -%}
       <li>
         {%- if link.links != blank -%}
-          <header-menu>
+          <header-menu
+            {% if section.settings.menu_open_on_hover %}
+              data-open-on-hover
+            {% endif %}
+          >
             <details id="Details-HeaderMenu-{{ forloop.index }}">
               <summary
                 id="HeaderMenu-{{ link.handle }}"
                 class="header__menu-item list-menu__item link focus-inset"
+                {% if link.url != '#' %}
+                  data-url="{{ link.url }}"
+                {% endif %}
               >
                 <span
-                  {%- if link.child_active %}
+                  {%- if link.current or link.child_active %}
                     class="header__active-menu-item"
                   {% endif %}
                 >
@@ -33,14 +40,33 @@
                 role="list"
                 tabindex="-1"
               >
+                {%- if section.settings.menu_show_view_all and link.url != '#' -%}
+                  <li>
+                    <a
+                      id="HeaderMenu-{{ link.handle }}-view-all"
+                      href="{{ link.url }}"
+                      class="header__menu-item list-menu__item link link--text focus-inset caption-large"
+                    >
+                      {{ 'sections.header.view_all' | t }}
+                    </a>
+                  </li>
+                {%- endif -%}
                 {%- for childlink in link.links -%}
+                  {%- liquid
+                    # link.current ignores the URL query, so every link like /collections/men?filter.p.vendor=Diesel
+                    # would count as "current" on any /collections/men page. Only trust it for links without a query.
+                    assign childlink_current = childlink.current
+                    if childlink.url contains '?'
+                      assign childlink_current = false
+                    endif
+                  -%}
                   <li>
                     {%- if childlink.links == blank -%}
                       <a
                         id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}"
                         href="{{ childlink.url }}"
-                        class="header__menu-item list-menu__item link link--text focus-inset caption-large{% if childlink.current %} list-menu__item--active{% endif %}"
-                        {% if childlink.current %}
+                        class="header__menu-item list-menu__item link link--text focus-inset caption-large{% if childlink_current %} list-menu__item--active{% endif %}"
+                        {% if childlink_current %}
                           aria-current="page"
                         {% endif %}
                       >
@@ -60,12 +86,18 @@
                           class="header__submenu list-menu motion-reduce"
                         >
                           {%- for grandchildlink in childlink.links -%}
+                            {%- liquid
+                              assign grandchildlink_current = grandchildlink.current
+                              if grandchildlink.url contains '?'
+                                assign grandchildlink_current = false
+                              endif
+                            -%}
                             <li>
                               <a
                                 id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
                                 href="{{ grandchildlink.url }}"
-                                class="header__menu-item list-menu__item link link--text focus-inset caption-large{% if grandchildlink.current %} list-menu__item--active{% endif %}"
-                                {% if grandchildlink.current %}
+                                class="header__menu-item list-menu__item link link--text focus-inset caption-large{% if grandchildlink_current %} list-menu__item--active{% endif %}"
+                                {% if grandchildlink_current %}
                                   aria-current="page"
                                 {% endif %}
                               >

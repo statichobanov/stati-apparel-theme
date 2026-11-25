@@ -270,6 +270,7 @@
     "header": {
       "announcement": "Известие",
       "menu": "Меню",
+      "view_all": "Виж всички",
       "cart_count": {
         "one": "{{ count }} артикул",
         "other": "{{ count }} артикула"

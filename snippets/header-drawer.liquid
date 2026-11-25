@@ -4,7 +4,6 @@
   @param {boolean} [show_country_selector] - Whether to show the country selector. Defaults to `false`.
   @param {boolean} [show_language_selector] - Whether to show the language selector. Defaults to `false`.
   @param {boolean} [show_social_links] - Whether to show links for configured social accounts. Defaults to `false`.
-
   @param {object} [section] - The current header section context, supplied implicitly when rendered from that section and used for menu settings.
 
   @example
@@ -37,7 +36,7 @@
                     <details id="Details-menu-drawer-menu-item-{{ forloop.index }}">
                       <summary
                         id="HeaderDrawer-{{ link.handle }}"
-                        class="menu-drawer__menu-item list-menu__item link link--text focus-inset{% if link.child_active %} menu-drawer__menu-item--active{% endif %}"
+                        class="menu-drawer__menu-item list-menu__item link link--text focus-inset{% if link.current or link.child_active %} menu-drawer__menu-item--active{% endif %}"
                       >
                         {{ link.title | escape }}
                         <span class="svg-wrapper">
@@ -60,14 +59,32 @@
                             {{ link.title | escape }}
                           </button>
                           <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1">
+                            {%- if section.settings.menu_show_view_all and link.url != '#' -%}
+                              <li>
+                                <a
+                                  id="HeaderDrawer-{{ link.handle }}-view-all"
+                                  href="{{ link.url }}"
+                                  class="menu-drawer__menu-item link link--text list-menu__item focus-inset"
+                                >
+                                  {{ 'sections.header.view_all' | t }}
+                                </a>
+                              </li>
+                            {%- endif -%}
                             {%- for childlink in link.links -%}
+                              {%- liquid
+                                # link.current ignores the URL query (see header-dropdown-menu.liquid).
+                                assign childlink_current = childlink.current
+                                if childlink.url contains '?'
+                                  assign childlink_current = false
+                                endif
+                              -%}
                               <li>
                                 {%- if childlink.links == blank -%}
                                   <a
                                     id="HeaderDrawer-{{ link.handle }}-{{ childlink.handle }}"
                                     href="{{ childlink.url }}"
-                                    class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if childlink.current %} menu-drawer__menu-item--active{% endif %}"
-                                    {% if childlink.current %}
+                                    class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if childlink_current %} menu-drawer__menu-item--active{% endif %}"
+                                    {% if childlink_current %}
                                       aria-current="page"
                                     {% endif %}
                                   >
@@ -106,12 +123,18 @@
                                         tabindex="-1"
                                       >
                                         {%- for grandchildlink in childlink.links -%}
+                                          {%- liquid
+                                            assign grandchildlink_current = grandchildlink.current
+                                            if grandchildlink.url contains '?'
+                                              assign grandchildlink_current = false
+                                            endif
+                                          -%}
                                           <li>
                                             <a
                                               id="HeaderDrawer-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
                                               href="{{ grandchildlink.url }}"
-                                              class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if grandchildlink.current %} menu-drawer__menu-item--active{% endif %}"
-                                              {% if grandchildlink.current %}
+                                              class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if grandchildlink_current %} menu-drawer__menu-item--active{% endif %}"
+                                              {% if grandchildlink_current %}
                                                 aria-current="page"
                                               {% endif %}
                                             >

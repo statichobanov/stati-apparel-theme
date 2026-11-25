@@ -34,6 +34,17 @@
   transform: translateY(0);
 }
 
+/* "Open dropdown menus on hover": invisible bridge from the menu item down to the panel.
+   Its height (--hover-bridge) is measured in details-disclosure.js. */
+header-menu[data-open-on-hover] .mega-menu[open] > summary::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: var(--hover-bridge, 0);
+}
+
 .mega-menu__list {
   display: grid;
   gap: 1.8rem 4rem;

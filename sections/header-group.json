@@ -36,6 +36,8 @@
         "logo_position": "middle-left",
         "menu": "main-menu-preview",
         "menu_type_desktop": "dropdown",
+        "menu_open_on_hover": true,
+        "menu_show_view_all": true,
         "sticky_header_type": "on-scroll-up",
         "show_line_separator": true,
         "enable_country_selector": true,
