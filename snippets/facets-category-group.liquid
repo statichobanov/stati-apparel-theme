@@ -1,0 +1,54 @@
+{% doc %}
+  Renders a "category" group for the vertical filter sidebar (e.g. "Пол": Дамски / Мъжки), built from a menu.
+  It is not a Shopify filter: each menu item links to a collection, so choosing one opens that collection,
+  and the item of the current collection is shown ticked. Clicking the ticked item removes it ("all products").
+  Looks like the other filter groups (same classes as the checkbox list in facets.liquid).
+
+  @param {object} menu - The menu (linklist). Its title is the group heading; its items should link to collections.
+  @param {object} results - The current collection.
+
+  @example
+  {% render 'facets-category-group', menu: section.settings.category_menu, results: collection %}
+{% enddoc %}
+
+<details class="facets__disclosure-vertical facets__categories" open>
+  <summary class="facets__summary caption-large focus-offset">
+    <div>
+      <span class="facets__summary-label">{{ menu.title | escape }}</span>
+      {{- 'icon-caret.svg' | inline_asset_content -}}
+    </div>
+  </summary>
+  <div class="facets__display-vertical">
+    <ul
+      class="facets-layout facets-layout-list facets-layout-list--text facets__list--vertical list-unstyled"
+      role="list"
+    >
+      {%- for link in menu.links -%}
+        {%- liquid
+          # link.current ignores URL parameters, so it is also true on /collections/men?filter.p.vendor=Diesel.
+          assign is_current = link.current
+          if link.type == 'collection_link' and link.object.id == results.id
+            assign is_current = true
+          endif
+        -%}
+        <li class="list-menu__item facets__item">
+          <a
+            href="{% if is_current %}{{ routes.all_products_collection_url }}{% else %}{{ link.url }}{% endif %}"
+            class="facets__label facet-checkbox facet-checkbox--link{% if is_current %} active{% endif %}"
+            {% if is_current %}
+              aria-current="page"
+            {% endif %}
+          >
+            {{- 'square.svg' | inline_asset_content -}}
+            <div class="svg-wrapper">
+              {{- 'icon-checkmark.svg' | inline_asset_content -}}
+            </div>
+            <span class="facet-checkbox__text">
+              <span class="facet-checkbox__text-label">{{ link.title | escape }}</span>
+            </span>
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</details>

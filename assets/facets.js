@@ -266,7 +266,8 @@ class FacetFiltersForm extends HTMLElement {
   }
 
   static renderAdditionalElements(html) {
-    const mobileElementSelectors = ['.mobile-facets__open', '.mobile-facets__count', '.sorting'];
+    // .facets-toggle__count: the "(2)" on our Filter button (facets-sidebar-toggle.js), refreshed after each filter change
+    const mobileElementSelectors = ['.mobile-facets__open', '.mobile-facets__count', '.sorting', '.facets-toggle__count'];
 
     mobileElementSelectors.forEach((selector) => {
       if (!html.querySelector(selector)) return;

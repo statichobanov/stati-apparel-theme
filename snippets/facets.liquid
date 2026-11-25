@@ -5,6 +5,7 @@
   @param {boolean} enable_filtering - Whether to show filtering controls.
   @param {boolean} enable_sorting - Whether to show sorting controls.
   @param {string} filter_type - The filter layout. Allowed values are `horizontal`, `vertical`, and `drawer`.
+  @param {object} [category_menu] - Optional menu (linklist) shown as the first group in the vertical layout. Its items link to collections; the current collection is shown as selected.
   @param {object} [section] - The current section context, supplied implicitly when rendered from a section and used to namespace filter controls.
 
   @example
@@ -112,6 +113,12 @@
             {%- endif -%}
 
             <script src="{{ 'show-more.js' | asset_url }}" defer="defer"></script>
+
+            {% comment %} Category group from a menu, e.g. "Пол": Дамски / Мъжки (vertical only) {% endcomment %}
+            {%- if filter_type == 'vertical' and category_menu.links.size > 0 -%}
+              {% render 'facets-category-group', menu: category_menu, results: results %}
+            {%- endif -%}
+
             {% comment %} Filters for both horizontal and vertical filter {% endcomment %}
             {%- for filter in results.filters -%}
               {% liquid
@@ -133,7 +140,8 @@
                     id="Details-{{ filter.param_name | escape }}-{{ section.id }}"
                     class="{% if filter_type == 'horizontal' %}disclosure-has-popup facets__disclosure{% else %} facets__disclosure-vertical{% endif %} js-filter"
                     data-index="{{ forloop.index }}"
-                    {% if filter_type == 'vertical' and forloop.index == 1 %}
+                    {% comment %} Vertical: every group starts open (Dawn opened only the first one) {% endcomment %}
+                    {% if filter_type == 'vertical' %}
                       open
                     {% endif %}
                   >
@@ -304,7 +312,7 @@
                     id="Details-{{ filter.param_name | escape }}-{{ section.id }}"
                     class="{% if filter_type == 'horizontal' %}disclosure-has-popup facets__disclosure{% else %} facets__disclosure-vertical{% endif %} js-filter"
                     data-index="{{ forloop.index }}"
-                    {% if filter_type == 'vertical' and forloop.index == 1 %}
+                    {% if filter_type == 'vertical' %}
                       open
                     {% endif %}
                   >

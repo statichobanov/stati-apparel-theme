@@ -42,10 +42,56 @@
 >
   <div class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}">
     {%- paginate collection.products by section.settings.products_per_page -%}
+      {%- liquid
+        # "Filter" button that shows/hides the vertical filter sidebar (setting "filters_toggle").
+        assign show_filters_toggle = false
+        if section.settings.enable_filtering and section.settings.filter_type == 'vertical' and section.settings.filters_toggle
+          assign show_filters_toggle = true
+        endif
+
+        # Number of active filters, shown on the button, e.g. "Филтър (2)".
+        assign active_filters_count = 0
+        for filter in collection.filters
+          assign active_filters_count = active_filters_count | plus: filter.active_values.size
+          if filter.type == 'price_range'
+            if filter.min_value.value != null or filter.max_value.value != null
+              assign active_filters_count = active_filters_count | plus: 1
+            endif
+          endif
+        endfor
+      -%}
+      {%- capture filters_toggle -%}
+        <facets-sidebar-toggle
+          id="FacetsToggle-{{ section.id }}"
+          class="facets-toggle"
+          data-target="FacetsVertical-{{ section.id }}"
+        >
+          <button
+            type="button"
+            class="facets-toggle__button"
+            aria-expanded="false"
+            aria-controls="main-collection-filters"
+          >
+            <span class="svg-wrapper">{{- 'icon-filter.svg' | inline_asset_content -}}</span>
+            <span>{{ 'products.facets.filter_button' | t }}</span>
+            <span class="facets-toggle__count">
+              {%- if active_filters_count > 0 %}({{ active_filters_count }}){% endif -%}
+            </span>
+          </button>
+        </facets-sidebar-toggle>
+        <script src="{{ 'facets-sidebar-toggle.js' | asset_url }}" defer="defer"></script>
+      {%- endcapture -%}
+
       {% comment %} Sort is the first tabbable element when filter type is vertical {% endcomment %}
+      {%- if show_filters_toggle and section.settings.enable_sorting == false -%}
+        <div class="facets-vertical-sort page-width small-hide">
+          <div class="facets-vertical-form">{{ filters_toggle }}</div>
+        </div>
+      {%- endif -%}
       {%- if section.settings.enable_sorting and section.settings.filter_type == 'vertical' -%}
         <facet-filters-form class="facets facets-vertical-sort page-width small-hide">
           <form class="facets-vertical-form" id="FacetSortForm">
+            {%- if show_filters_toggle -%}{{ filters_toggle }}{%- endif -%}
             <div class="facet-filters sorting caption">
               <div class="facet-filters__field">
                 <h2 class="facet-filters__label caption-large text-body">
@@ -101,7 +147,24 @@
         </facet-filters-form>
       {%- endif -%}
 
-      <div class="{% if section.settings.filter_type == 'vertical' %} facets-vertical page-width{% endif %}">
+      <div
+        {% if show_filters_toggle %}
+          id="FacetsVertical-{{ section.id }}"
+        {% endif %}
+        class="{% if section.settings.filter_type == 'vertical' %} facets-vertical page-width{% endif %}{% if show_filters_toggle %} facets-vertical--collapsed{% endif %}"
+      >
+        {%- if show_filters_toggle -%}
+          <script>
+            // Re-open the sidebar if the customer left it open on the previous page (same tab).
+            // Runs before the page is painted, so the layout doesn't jump. See facets-sidebar-toggle.js.
+            try {
+              if (sessionStorage.getItem('facets-sidebar-open') === '1') {
+                document.currentScript.parentElement.classList.remove('facets-vertical--collapsed');
+                document.querySelector('#FacetsToggle-{{ section.id }} button').setAttribute('aria-expanded', 'true');
+              }
+            } catch (error) {}
+          </script>
+        {%- endif -%}
         {{ 'component-facets.css' | asset_url | stylesheet_tag }}
         <script src="{{ 'facets.js' | asset_url }}" defer="defer"></script>
         {%- if section.settings.enable_filtering or section.settings.enable_sorting -%}
@@ -115,7 +178,8 @@
               results: collection,
               enable_filtering: section.settings.enable_filtering,
               enable_sorting: section.settings.enable_sorting,
-              filter_type: section.settings.filter_type
+              filter_type: section.settings.filter_type,
+              category_menu: section.settings.category_menu
             %}
           </aside>
         {%- endif -%}
@@ -379,6 +443,19 @@
       ],
       "default": "horizontal",
       "label": "t:sections.main-collection-product-grid.settings.filter_type.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "filters_toggle",
+      "default": false,
+      "label": "Show vertical filters with a Filter button",
+      "info": "Vertical layout only. Filters stay hidden until the customer clicks Filter; another click hides them."
+    },
+    {
+      "type": "link_list",
+      "id": "category_menu",
+      "label": "Category filter menu",
+      "info": "Optional. Shown as the first filter group in the vertical layout. Use a menu whose items link to collections (e.g. Women, Men). The menu title is the group heading; the current collection is shown as selected."
     },
     {
       "type": "checkbox",
