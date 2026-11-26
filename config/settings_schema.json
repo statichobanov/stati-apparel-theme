@@ -147,6 +147,18 @@
     ]
   },
   {
+    "name": "Brand style",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "brand_style",
+        "default": false,
+        "label": "Enable brand style",
+        "info": "Montserrat font with Bulgarian letterforms (replaces the fonts in Typography), uppercase headings and menu, centered menu, filter chips and the discount in % on sale badges. Colors, buttons and cards stay in their own settings."
+      }
+    ]
+  },
+  {
     "name": "t:settings_schema.layout.name",
     "settings": [
       {

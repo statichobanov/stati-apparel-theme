@@ -1,0 +1,17 @@
+{%- doc -%}
+  Text of the sale badge. With Brand style on: the discount in percent ("-16%"), with Dawn's "Sale"
+  text kept for screen readers. With Brand style off, or without a compare-at price: Dawn's "Sale".
+
+  @param {number} compare_at_price - Compare-at price, in minor units (cents).
+  @param {number} price - Price, in minor units (cents).
+
+  @example
+  {% render 'sale-badge-label', compare_at_price: product.compare_at_price, price: product.price %}
+{%- enddoc -%}
+{%- if settings.brand_style and compare_at_price > price -%}
+  {%- assign percent = compare_at_price | minus: price | times: 100.0 | divided_by: compare_at_price | round -%}
+  <span aria-hidden="true">-{{ percent }}%</span>
+  <span class="visually-hidden">{{ 'products.product.on_sale' | t }}</span>
+{%- else -%}
+  {{- 'products.product.on_sale' | t -}}
+{%- endif -%}
