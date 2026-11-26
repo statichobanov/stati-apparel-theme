@@ -11,6 +11,7 @@
   "current": "Dawn",
   "presets": {
     "Dawn": {
+      "logo_text": "Clockify",
       "logo_width": 90,
       "customer_account_menu": "customer-account-main-menu",
       "color_schemes": {

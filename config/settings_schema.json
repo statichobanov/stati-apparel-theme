@@ -16,6 +16,12 @@
         "label": "t:settings_schema.logo.settings.logo_image.label"
       },
       {
+        "type": "text",
+        "id": "logo_text",
+        "label": "Logo text",
+        "info": "Shown when no logo image is set. Leave empty to show the store name."
+      },
+      {
         "type": "range",
         "id": "logo_width",
         "min": 50,
